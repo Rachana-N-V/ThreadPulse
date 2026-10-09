@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7f4">
-  <title>MissedIt — What did I miss?</title>
+  <title>ThreadPulse — What did I miss?</title>
   <link rel="stylesheet" href="styles.css">
   <script src="parser.js" defer></script>
   <script src="analyzer.js" defer></script>
@@ -13,9 +13,9 @@
 <body>
   <main class="page-shell">
     <header class="site-header">
-      <a class="brand" href="#" aria-label="MissedIt home">
-        <span class="brand-mark" aria-hidden="true">M</span>
-        <span>MissedIt</span>
+      <a class="brand" href="#" aria-label="ThreadPulse home">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span>ThreadPulse</span>
       </a>
       <span class="privacy-note"><span aria-hidden="true">●</span> Private by design</span>
     </header>
@@ -43,64 +43,74 @@
       <p class="status" id="status" role="status" aria-live="polite">Your chat will be read and parsed on this device only.</p>
     </section>
 
-    <section class="analysis-card" aria-labelledby="analysis-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">At a glance</p>
-          <h2 id="analysis-heading">Conversation summary</h2>
-        </div>
-        <span class="message-count" id="message-count">0 messages</span>
-      </div>
-      <p class="analysis-overview" id="analysis-overview">Choose a supported export to see a local overview.</p>
-      <p class="analysis-note">These are pattern-based candidates, not an AI-generated summary or guaranteed interpretation.</p>
-      <section class="priority-section" aria-labelledby="priority-heading">
-        <h3 id="priority-heading">Top priorities</h3>
-        <p class="analysis-empty" id="priority-empty">No candidate priorities to show yet.</p>
-        <ol class="analysis-list" id="priority-list"></ol>
+    <div class="results" id="results" hidden>
+      <section class="result-summary" aria-label="Analysis status" aria-live="polite">
+        <span class="result-file" id="result-file"></span>
+        <span class="result-status" id="result-status"></span>
       </section>
-      <div class="candidate-grid">
-        <section class="candidate-section" aria-labelledby="actions-heading">
-          <h3 id="actions-heading">Action items</h3>
-          <p class="analysis-empty">Potential tasks based on message wording.</p>
-          <ol class="analysis-list" id="actions-list"></ol>
-        </section>
-        <section class="candidate-section" aria-labelledby="deadlines-heading">
-          <h3 id="deadlines-heading">Deadlines</h3>
-          <p class="analysis-empty">Explicit date or time candidates.</p>
-          <ol class="analysis-list" id="deadlines-list"></ol>
-        </section>
-        <section class="candidate-section" aria-labelledby="decisions-heading">
-          <h3 id="decisions-heading">Decisions</h3>
-          <p class="analysis-empty">Messages with decision-related wording.</p>
-          <ol class="analysis-list" id="decisions-list"></ol>
-        </section>
-        <section class="candidate-section" aria-labelledby="urgent-heading">
-          <h3 id="urgent-heading">Urgency signals</h3>
-          <p class="analysis-empty">Messages with explicit urgency terms.</p>
-          <ol class="analysis-list" id="urgent-list"></ol>
-        </section>
-        <section class="candidate-section" aria-labelledby="mentions-heading">
-          <h3 id="mentions-heading">Mentions</h3>
-          <p class="analysis-empty">Messages containing a direct @mention.</p>
-          <ol class="analysis-list" id="mentions-list"></ol>
-        </section>
-      </div>
-    </section>
 
-    <section class="messages-section" aria-labelledby="messages-heading" aria-live="polite">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Your conversation</p>
-          <h2 id="messages-heading">Parsed messages</h2>
+      <section class="analysis-card" aria-labelledby="analysis-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">At a glance</p>
+            <h2 id="analysis-heading">Conversation overview</h2>
+          </div>
+          <div class="result-counts">
+            <span class="message-count" id="message-count">0 messages</span>
+            <span class="flagged-count" id="flagged-count">0 flagged messages</span>
+          </div>
         </div>
-      </div>
-      <p class="empty-state" id="empty-state">Choose a supported export to see its messages here.</p>
-      <ol class="message-list" id="message-list"></ol>
-    </section>
+        <p class="analysis-overview" id="analysis-overview"></p>
+        <p class="analysis-note">These are pattern-based candidates, not an AI-generated summary or guaranteed interpretation.</p>
+        <section class="priority-section" aria-labelledby="priority-heading">
+          <h3 id="priority-heading">Top priorities</h3>
+          <p class="analysis-empty" id="priority-empty">No candidate priorities detected.</p>
+          <ol class="analysis-list" id="priority-list"></ol>
+        </section>
+        <div class="candidate-grid">
+          <section class="candidate-section" aria-labelledby="actions-heading">
+            <h3 id="actions-heading">Action items</h3>
+            <p class="analysis-empty">Potential tasks based on message wording.</p>
+            <ol class="analysis-list" id="actions-list"></ol>
+          </section>
+          <section class="candidate-section" aria-labelledby="deadlines-heading">
+            <h3 id="deadlines-heading">Deadlines</h3>
+            <p class="analysis-empty">Explicit date or time candidates.</p>
+            <ol class="analysis-list" id="deadlines-list"></ol>
+          </section>
+          <section class="candidate-section" aria-labelledby="decisions-heading">
+            <h3 id="decisions-heading">Decisions</h3>
+            <p class="analysis-empty">Messages with decision-related wording.</p>
+            <ol class="analysis-list" id="decisions-list"></ol>
+          </section>
+          <section class="candidate-section" aria-labelledby="urgent-heading">
+            <h3 id="urgent-heading">Urgency signals</h3>
+            <p class="analysis-empty">Messages with explicit urgency terms.</p>
+            <ol class="analysis-list" id="urgent-list"></ol>
+          </section>
+          <section class="candidate-section" aria-labelledby="mentions-heading">
+            <h3 id="mentions-heading">Mentions</h3>
+            <p class="analysis-empty">Messages containing a direct @mention.</p>
+            <ol class="analysis-list" id="mentions-list"></ol>
+          </section>
+        </div>
+      </section>
 
-    <footer class="site-footer">
-      <p>MissedIt is a parsing demo. It does not generate AI summaries or send your chat anywhere.</p>
-    </footer>
+      <details class="transcript" id="transcript">
+        <summary>
+          <span>Full conversation</span>
+          <span class="transcript-count" id="transcript-count"></span>
+        </summary>
+        <section class="messages-section" aria-labelledby="messages-heading">
+          <h2 id="messages-heading" class="visually-hidden">Parsed messages</h2>
+          <ol class="message-list" id="message-list"></ol>
+        </section>
+      </details>
+
+      <footer class="site-footer">
+        <p>ThreadPulse uses local, rule-based analysis. It does not generate AI summaries or send your chat anywhere.</p>
+      </footer>
+    </div>
   </main>
 </body>
 </html>

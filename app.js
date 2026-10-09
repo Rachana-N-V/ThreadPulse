@@ -4,26 +4,42 @@
   const fileInput = document.getElementById("chat-file");
   const fileName = document.getElementById("file-name");
   const status = document.getElementById("status");
+  const results = document.getElementById("results");
+  const resultFile = document.getElementById("result-file");
+  const resultStatus = document.getElementById("result-status");
   const messageCount = document.getElementById("message-count");
+  const flaggedCount = document.getElementById("flagged-count");
+  const transcriptCount = document.getElementById("transcript-count");
+  const transcript = document.getElementById("transcript");
   const messageList = document.getElementById("message-list");
-  const emptyState = document.getElementById("empty-state");
   const analysisOverview = document.getElementById("analysis-overview");
   const ANALYSIS_CATEGORIES = ["actions", "deadlines", "decisions", "urgent", "mentions"];
+  const EMPTY_MESSAGES = {
+    priority: "No candidate priorities detected.",
+    actions: "Potential tasks based on message wording.",
+    deadlines: "Explicit date or time candidates.",
+    decisions: "Messages with decision-related wording.",
+    urgent: "Messages with explicit urgency terms.",
+    mentions: "Messages containing a direct @mention."
+  };
 
   function clearMessages() {
     messageList.replaceChildren();
-    emptyState.hidden = false;
     messageCount.textContent = "0 messages";
+    transcriptCount.textContent = "";
+    transcript.open = false;
   }
 
   function clearAnalysis() {
-    analysisOverview.textContent = "Choose a supported export to see a local overview.";
+    analysisOverview.textContent = "";
+    flaggedCount.textContent = "0 flagged messages";
     for (const category of [...ANALYSIS_CATEGORIES, "priority"]) {
       const list = document.getElementById(`${category}-list`);
       const empty = category === "priority"
         ? document.getElementById("priority-empty")
         : list.closest(".candidate-section").querySelector(".analysis-empty");
       list.replaceChildren();
+      empty.textContent = EMPTY_MESSAGES[category];
       empty.hidden = false;
     }
   }
@@ -130,15 +146,18 @@
     }
 
     messageList.replaceChildren(fragment);
-    emptyState.hidden = messages.length > 0;
     messageCount.textContent = `${messages.length} ${messages.length === 1 ? "message" : "messages"}`;
+    transcriptCount.textContent = `${messages.length} ${messages.length === 1 ? "message" : "messages"}`;
   }
 
   async function handleFileSelection() {
     const file = fileInput.files && fileInput.files[0];
+    results.hidden = true;
     clearMessages();
     clearAnalysis();
     status.removeAttribute("data-kind");
+    resultFile.textContent = "";
+    resultStatus.textContent = "";
 
     if (!file) {
       fileName.textContent = "No file selected";
@@ -163,13 +182,21 @@
       const skippedLineNotice = messages.unparsedLineCount > 0
         ? ` ${messages.unparsedLineCount} unrecognized line(s) were skipped.`
         : "";
-      status.textContent = `Read and parsed ${messages.length} messages locally.${skippedLineNotice} The file was not uploaded.`;
+      const statusMessage = `Read and parsed ${messages.length} messages locally.${skippedLineNotice} The file was not uploaded.`;
+      status.textContent = statusMessage;
+      resultFile.textContent = file.name;
+      resultStatus.textContent = `Processed locally · ${messages.length} ${messages.length === 1 ? "message" : "messages"}` +
+        (messages.unparsedLineCount > 0
+          ? ` · ${messages.unparsedLineCount} unrecognized line(s) skipped`
+          : "");
+      flaggedCount.textContent = `${analysis.priorities.length} flagged ${analysis.priorities.length === 1 ? "message" : "messages"}`;
+      results.hidden = false;
     } catch (error) {
       if (error instanceof MissedItParser.ChatParseError) {
         showError(error.message);
       } else {
         showError("The file could not be read. Please try selecting it again.");
-        console.error("MissedIt could not read the selected file.", error);
+        console.error("ThreadPulse could not read the selected file.", error);
       }
     }
   }

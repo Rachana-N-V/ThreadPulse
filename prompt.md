@@ -1,6 +1,6 @@
 # Development prompts
 
-This file records the user-provided prompts used for the MissedIt MVP. It does not claim that an AI model, API, or automated analysis was used by the application.
+This file records the user-provided prompts used for the ThreadPulse MVP. Historical prompts are retained as originally supplied. It does not claim that an AI model, API, or automated analysis was used by the application.
 
 ## Prompt 1 — proposal
 
@@ -140,3 +140,26 @@ This file records the user-provided prompts used for the MissedIt MVP. It does n
 > After implementation, run the parser and analysis tests. Report exact test results, changed files, and anything not tested. Do not claim genuine AI summarization or perfect deadline detection.
 >
 > Do not add unrelated features or redesign the entire application.
+
+## Prompt 5 — results-first UI
+
+> We are improving the existing ProtocolX hackathon MVP in this repository. First inspect the current files, especially `index.html`, `styles.css`, `app.js`, `parser.js`, `analyzer.js`, `parser.test.js`, `analyzer.test.js`, `README.md`, and `prompt.md`. Understand the existing structure before editing.
+>
+> **Goal: make the app results-first with minimal, safe changes.**
+>
+> 1. Use **ThreadPulse** as the visible product name consistently in the UI and relevant documentation. Keep `MissedItParser` and `MissedItAnalyzer` JavaScript globals unchanged because tests may depend on them.
+> 2. Before a chat file is successfully analyzed, show only the product introduction and upload area. Hide or remove empty analysis sections that currently make the page look as though results already exist.
+> 3. After successful analysis, show a compact file/status summary and put the most useful results near the top: a count of flagged messages and the priority list. Keep the existing category analysis available below.
+> 4. Put the full conversation transcript inside a native HTML `<details>` element that starts collapsed. Do not remove access to the original messages.
+> 5. Fix the stale empty-state text bug if it can be corrected safely within these changes.
+> 6. Keep the design responsive and readable. Do not add frameworks, packages, external fonts, APIs, network requests, browser storage, or unrelated features.
+> 7. Preserve the current parser/analyzer behavior and their output contracts. Do not rewrite working logic unnecessarily. Continue using safe DOM methods and `textContent`; never use `innerHTML`, `outerHTML`, `insertAdjacentHTML`, or `document.write`.
+> 8. Keep the privacy and AI claims honest: this MVP uses local, rule-based analysis, not a generative AI summary. Do not claim more than the code verifies.
+> 9. Update `README.md` and `prompt.md` only as needed to accurately reflect the implemented changes and the actual prompt used.
+>
+> **Verification is required:**
+>
+> - Run `node --test parser.test.js analyzer.test.js`.
+> - Inspect the final diff and check that no unrelated files or behaviors changed.
+> - Report the files changed, test results, and any remaining issues. Do not claim browser testing unless you actually performed it.
+> Make the smallest maintainable change that achieves this goal. Do not start a broader visual redesign or add optional features.

@@ -1,10 +1,12 @@
-# MissedIt
+# ThreadPulse
 
-MissedIt is a browser-only chat import and local-analysis MVP for the “What did I miss?” challenge. It reads WhatsApp `.txt` exports, displays parsed messages, and reports pattern-based candidate highlights. Its overview uses local statistics and extracted messages; it is not an AI-generated semantic summary.
+ThreadPulse is a browser-only chat import and local-analysis MVP for the “What did I miss?” challenge. It reads WhatsApp `.txt` exports, displays parsed messages, and reports pattern-based candidate highlights. Its overview uses local statistics and extracted messages; it is not an AI-generated semantic summary.
 
 ## Run locally
 
 Open `index.html` in a modern browser and choose a WhatsApp-exported `.txt` file. No build step, web server, or dependency installation is required.
+
+Before a file is successfully parsed and analyzed, the page shows the introduction and upload area only. Successful analysis reveals a compact local-processing status, message and flagged-message counts, priorities and category candidates. The original transcript remains available in a collapsed “Full conversation” disclosure.
 
 ## Supported export format
 
@@ -24,7 +26,7 @@ Lines following a recognized message are appended to that message until the next
 
 ## Privacy
 
-The file is read with the browser File API and parsed in page memory. The app has no backend, external AI API, analytics, external scripts, or browser storage. It does not save the file or parsed conversation; closing or reloading the page discards the in-memory data.
+The file is read with the browser File API and parsed and analyzed in page memory. The app has no backend, external AI API, analytics, external scripts, or browser storage. It does not save the file or parsed conversation; closing or reloading the page discards the in-memory data.
 
 ## Local analysis
 
