@@ -224,29 +224,49 @@
 
     if (!file) {
       fileName.textContent = "No file selected";
-      setStatus("Choose a WhatsApp .txt export. It will be processed on this device.");
+      setStatus("Choose a WhatsApp .txt export or .zip archive. It will be processed on this device.");
       return;
     }
 
     fileName.textContent = file.name;
-    if (!file.name.toLowerCase().endsWith(".txt")) {
-      setStatus("Please choose a WhatsApp text export with a .txt file extension.", "error");
+    const extension = file.name.toLowerCase().split(".").pop();
+    if (extension !== "txt" && extension !== "zip") {
+      setStatus("Please choose a WhatsApp text export (.txt) or ZIP archive (.zip).", "error");
       return;
     }
 
     setStatus("Reading and analyzing locally…");
     try {
-      const text = await file.text();
-      if (version !== processingVersion || activeMode !== "import") {
-        return;
+      if (extension === "zip") {
+        const extracted = ThreadPulseZipImport.extractWhatsAppChat(new Uint8Array(await file.arrayBuffer()));
+        if (version !== processingVersion || activeMode !== "import") {
+          return;
+        }
+        const selectionNote = extracted.textFileCount > 1
+          ? `Selected ${extracted.path} from ${extracted.textFileCount} .txt files (${extracted.selectionReason}).`
+          : `Extracted ${extracted.path} from the ZIP.`;
+        analyzeText(extracted.text, {
+          kind: `ZIP import · ${selectionNote}`,
+          label: file.name
+        });
+      } else {
+        const text = await file.text();
+        if (version !== processingVersion || activeMode !== "import") {
+          return;
+        }
+        analyzeText(text, { kind: "Imported chat", label: file.name });
       }
-      analyzeText(text, { kind: "Imported chat", label: file.name });
     } catch (error) {
       if (version !== processingVersion || activeMode !== "import") {
         return;
       }
       clearBrief();
-      setStatus("The file could not be read. Please select it again.", "error");
+      setStatus(
+        error instanceof ThreadPulseZipImport.ZipImportError
+          ? error.message
+          : "The file could not be read or extracted. Please select a valid .txt or .zip export.",
+        "error"
+      );
       console.error("ThreadPulse could not read the selected file.", error);
     }
   }

@@ -4,7 +4,9 @@ ThreadPulse is a browser-only chat import and local-analysis MVP built around **
 
 ## Run locally
 
-Open `index.html` in a modern browser. Choose **Import chat** for a WhatsApp `.txt` export or **Paste conversation** to enter exported chat text. Both methods use the same parser and local analysis. No build step, server, or dependency installation is required.
+Open `index.html` in a modern browser. Choose **Import chat** for a WhatsApp `.txt` export or `.zip` archive, or **Paste conversation** to enter exported chat text. Both methods use the same parser and local analysis. No build step, server, or dependency installation is required.
+
+ZIP files are extracted entirely in the browser using the locally bundled [fflate](https://github.com/101arrowz/fflate) 0.8.3 library (`vendor/fflate.js`; MIT license in `vendor/fflate.LICENSE`). ThreadPulse selects one `.txt` entry only: WhatsApp-named chat exports are preferred, followed by `chat.txt`, other chat-related names, then the first remaining name in alphabetical order. When a ZIP has multiple text files, the selected path and reason are shown in the source/status line; unrelated text files are not combined.
 
 The brief shows message and flagged-message counts, up to five highest-priority unique messages, up to five decision and mention messages, then disclosures for remaining flagged messages and the full transcript. Categories for a message shown earlier are combined as labels on that card rather than rendered as duplicate message cards.
 
@@ -38,4 +40,4 @@ All results are heuristic candidates. False positives and missed paraphrases are
 
 ## Privacy
 
-Imported and pasted chat text is parsed and analyzed in page memory using browser-side JavaScript and is not uploaded or intentionally saved. The app has no backend, external AI API, analytics, or external scripts. The selected light/dark theme preference is the only value stored locally, in `localStorage`. Browsers may restore form contents in some circumstances, so pasted text may reappear after closing or reloading the page.
+Imported, extracted, and pasted chat text is parsed and analyzed in page memory using browser-side JavaScript and is not uploaded or intentionally saved. ZIP extraction uses the bundled local fflate library; neither chat text nor archives are sent to an external service. The app has no backend, external AI API, analytics, or CDN-loaded scripts. The selected light/dark theme preference is the only value stored locally, in `localStorage`. Browsers may restore form contents in some circumstances, so pasted text may reappear after closing or reloading the page.
