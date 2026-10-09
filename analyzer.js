@@ -137,5 +137,77 @@
     };
   }
 
-  root.MissedItAnalyzer = { analyzeMessages };
+  function createPulseBrief(analysis) {
+    if (!analysis || !Array.isArray(analysis.priorities) || !analysis.categories) {
+      throw new TypeError("Expected analysis results from analyzeMessages.");
+    }
+
+    const recordsByMessage = new Map();
+    const flagged = [];
+
+    for (const priority of analysis.priorities) {
+      let record = recordsByMessage.get(priority.message);
+      if (!record) {
+        record = {
+          message: priority.message,
+          labels: [...priority.labels],
+          evidence: []
+        };
+        recordsByMessage.set(priority.message, record);
+        flagged.push(record);
+      }
+
+      for (const category of priority.categories) {
+        const categoryHits = analysis.categories[category] || [];
+        const hit = categoryHits.find(candidate => candidate.message === priority.message);
+        for (const evidence of hit ? hit.evidence : []) {
+          if (!record.evidence.includes(evidence)) {
+            record.evidence.push(evidence);
+          }
+        }
+      }
+    }
+
+    const attention = flagged.slice(0, 5);
+    const attentionMessages = new Set(attention.map(record => record.message));
+    const displayedMessages = new Set(attentionMessages);
+    const categoryRecords = category => [...new Set(
+      (analysis.categories[category] || [])
+        .map(hit => recordsByMessage.get(hit.message))
+        .filter(Boolean)
+    )];
+    const takeCategory = category => {
+      const available = categoryRecords(category).filter(record => !displayedMessages.has(record.message));
+      const visible = available.slice(0, 5);
+      for (const record of visible) {
+        displayedMessages.add(record.message);
+      }
+      return visible;
+    };
+    const decisions = takeCategory("decisions");
+    const mentions = takeCategory("mentions");
+    const remaining = flagged.filter(record => !displayedMessages.has(record.message));
+    const decisionMessages = new Set(categoryRecords("decisions").map(record => record.message));
+    const mentionMessages = new Set(categoryRecords("mentions").map(record => record.message));
+    const decisionShownElsewhere = [...decisionMessages].filter(message =>
+      attentionMessages.has(message) || mentions.some(record => record.message === message)
+    ).length;
+    const mentionShownElsewhere = [...mentionMessages].filter(message =>
+      attentionMessages.has(message) || decisions.some(record => record.message === message)
+    ).length;
+
+    return {
+      flaggedCount: flagged.length,
+      decisionCount: (analysis.categories.decisions || []).length,
+      mentionCount: (analysis.categories.mentions || []).length,
+      decisionShownElsewhere,
+      mentionShownElsewhere,
+      attention,
+      decisions,
+      mentions,
+      remaining
+    };
+  }
+
+  root.MissedItAnalyzer = { analyzeMessages, createPulseBrief };
 })(globalThis);

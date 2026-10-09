@@ -3,8 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f7f4">
-  <title>ThreadPulse — What did I miss?</title>
+  <meta name="theme-color" content="#f6f5f0">
+  <title>ThreadPulse — Pulse Brief</title>
+  <script>
+    (function () {
+      let theme = "";
+      try {
+        const savedTheme = localStorage.getItem("threadpulse-theme");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          theme = savedTheme;
+        }
+      } catch (error) {
+        console.warn("ThreadPulse could not read the saved theme preference.", error);
+      }
+      if (!theme) {
+        theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+      document.documentElement.dataset.theme = theme;
+      document.querySelector('meta[name="theme-color"]').content =
+        theme === "dark" ? "#151a17" : "#f6f5f0";
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css">
   <script src="parser.js" defer></script>
   <script src="analyzer.js" defer></script>
@@ -17,100 +38,106 @@
         <span class="brand-mark" aria-hidden="true">T</span>
         <span>ThreadPulse</span>
       </a>
-      <span class="privacy-note"><span aria-hidden="true">●</span> Private by design</span>
+      <div class="header-actions">
+        <span class="privacy-note"><span aria-hidden="true">●</span> Processed on this device</span>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Dark theme" aria-pressed="false" title="Switch to dark theme">
+          <span class="theme-icon" id="theme-icon" aria-hidden="true">☾</span>
+          <span id="theme-label">Dark theme</span>
+        </button>
+      </div>
     </header>
 
     <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">A little clarity for busy chats</p>
-      <h1 id="page-title">What did I miss?</h1>
-      <p class="intro-copy">Start with a WhatsApp chat export. Your file stays in this browser; it is not uploaded anywhere.</p>
+      <p class="eyebrow">Pulse Brief</p>
+      <h1 id="page-title">One conversation in.<br>One clear brief out.</h1>
+      <p class="intro-copy">Bring in a WhatsApp chat and find the messages worth a closer look. Your conversation stays in this browser.</p>
     </section>
 
-    <section class="upload-card" aria-labelledby="upload-heading">
-      <div class="upload-copy">
-        <span class="step-number" aria-hidden="true">01</span>
+    <section class="input-card" aria-labelledby="input-heading">
+      <div class="input-heading">
         <div>
-          <h2 id="upload-heading">Choose a chat export</h2>
-          <p>For this first version, use a WhatsApp <code>.txt</code> export with dates like <code>DD/MM/YY, HH:MM</code>.</p>
+          <p class="eyebrow">Start here</p>
+          <h2 id="input-heading">Choose how to add your conversation</h2>
         </div>
       </div>
-      <input id="chat-file" class="visually-hidden" type="file" accept=".txt,text/plain">
-      <label class="file-picker" for="chat-file">
-        <span aria-hidden="true">＋</span>
-        <span>Choose .txt file</span>
-      </label>
-      <p class="file-name" id="file-name">No file selected</p>
-      <p class="status" id="status" role="status" aria-live="polite">Your chat will be read and parsed on this device only.</p>
+
+      <div class="input-methods" role="group" aria-label="Conversation input method">
+        <button class="method-button" id="import-method" type="button" aria-pressed="true">Import chat</button>
+        <button class="method-button" id="paste-method" type="button" aria-pressed="false">Paste conversation</button>
+      </div>
+
+      <div class="input-panel" id="import-panel">
+        <p class="panel-copy">Choose a WhatsApp <code>.txt</code> export to create your brief.</p>
+        <input id="chat-file" class="visually-hidden" type="file" accept=".txt,text/plain">
+        <label class="file-picker" for="chat-file">Choose .txt file</label>
+        <span class="file-name" id="file-name">No file selected</span>
+      </div>
+
+      <div class="input-panel" id="paste-panel" hidden>
+        <label class="paste-label" for="chat-text">Paste WhatsApp-exported chat text</label>
+        <textarea id="chat-text" rows="7" spellcheck="false" autocomplete="off" placeholder="Paste exported messages here…"></textarea>
+        <button class="process-button" id="process-paste" type="button">Create Pulse Brief</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">No chat content is uploaded or saved.</p>
     </section>
 
-    <div class="results" id="results" hidden>
-      <section class="result-summary" aria-label="Analysis status" aria-live="polite">
-        <span class="result-file" id="result-file"></span>
-        <span class="result-status" id="result-status"></span>
-      </section>
+    <section class="brief" id="brief" aria-labelledby="brief-heading" hidden>
+      <div class="brief-meta">
+        <span class="source-name" id="source-name"></span>
+        <span id="source-status"></span>
+      </div>
 
-      <section class="analysis-card" aria-labelledby="analysis-heading">
+      <header class="brief-header">
+        <p class="eyebrow">Pulse Brief</p>
+        <h2 id="brief-heading">Here's what you missed.</h2>
+        <p class="brief-count" id="brief-count"></p>
+      </header>
+
+      <section class="brief-section attention-section" aria-labelledby="attention-heading">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">At a glance</p>
-            <h2 id="analysis-heading">Conversation overview</h2>
-          </div>
-          <div class="result-counts">
-            <span class="message-count" id="message-count">0 messages</span>
-            <span class="flagged-count" id="flagged-count">0 flagged messages</span>
-          </div>
+          <span class="section-index">01</span>
+          <h3 id="attention-heading">Needs your attention</h3>
         </div>
-        <p class="analysis-overview" id="analysis-overview"></p>
-        <p class="analysis-note">These are pattern-based candidates, not an AI-generated summary or guaranteed interpretation.</p>
-        <section class="priority-section" aria-labelledby="priority-heading">
-          <h3 id="priority-heading">Top priorities</h3>
-          <p class="analysis-empty" id="priority-empty">No candidate priorities detected.</p>
-          <ol class="analysis-list" id="priority-list"></ol>
-        </section>
-        <div class="candidate-grid">
-          <section class="candidate-section" aria-labelledby="actions-heading">
-            <h3 id="actions-heading">Action items</h3>
-            <p class="analysis-empty">Potential tasks based on message wording.</p>
-            <ol class="analysis-list" id="actions-list"></ol>
-          </section>
-          <section class="candidate-section" aria-labelledby="deadlines-heading">
-            <h3 id="deadlines-heading">Deadlines</h3>
-            <p class="analysis-empty">Explicit date or time candidates.</p>
-            <ol class="analysis-list" id="deadlines-list"></ol>
-          </section>
-          <section class="candidate-section" aria-labelledby="decisions-heading">
-            <h3 id="decisions-heading">Decisions</h3>
-            <p class="analysis-empty">Messages with decision-related wording.</p>
-            <ol class="analysis-list" id="decisions-list"></ol>
-          </section>
-          <section class="candidate-section" aria-labelledby="urgent-heading">
-            <h3 id="urgent-heading">Urgency signals</h3>
-            <p class="analysis-empty">Messages with explicit urgency terms.</p>
-            <ol class="analysis-list" id="urgent-list"></ol>
-          </section>
-          <section class="candidate-section" aria-labelledby="mentions-heading">
-            <h3 id="mentions-heading">Mentions</h3>
-            <p class="analysis-empty">Messages containing a direct @mention.</p>
-            <ol class="analysis-list" id="mentions-list"></ol>
-          </section>
-        </div>
+        <p class="empty-state" id="attention-empty">No messages were flagged by the local checks.</p>
+        <ol class="brief-list" id="attention-list"></ol>
       </section>
 
-      <details class="transcript" id="transcript">
-        <summary>
-          <span>Full conversation</span>
-          <span class="transcript-count" id="transcript-count"></span>
-        </summary>
-        <section class="messages-section" aria-labelledby="messages-heading">
-          <h2 id="messages-heading" class="visually-hidden">Parsed messages</h2>
-          <ol class="message-list" id="message-list"></ol>
+      <div class="brief-columns">
+        <section class="brief-section" aria-labelledby="decisions-heading">
+          <div class="section-heading">
+            <span class="section-index">02</span>
+            <h3 id="decisions-heading">Decisions made</h3>
+          </div>
+          <p class="empty-state" id="decisions-empty">No decision candidates detected.</p>
+          <p class="section-note" id="decisions-note" hidden></p>
+          <ol class="brief-list compact-list" id="decisions-list"></ol>
         </section>
+
+        <section class="brief-section" aria-labelledby="mentions-heading">
+          <div class="section-heading">
+            <span class="section-index">03</span>
+            <h3 id="mentions-heading">Direct mentions</h3>
+          </div>
+          <p class="empty-state" id="mentions-empty">No direct mentions detected.</p>
+          <p class="section-note" id="mentions-note" hidden></p>
+          <ol class="brief-list compact-list" id="mentions-list"></ol>
+        </section>
+      </div>
+
+      <details class="disclosure" id="remaining-disclosure">
+        <summary>More flagged messages <span id="remaining-count"></span></summary>
+        <p class="empty-state" id="remaining-empty">No additional flagged messages.</p>
+        <ol class="brief-list" id="remaining-list"></ol>
       </details>
 
-      <footer class="site-footer">
-        <p>ThreadPulse uses local, rule-based analysis. It does not generate AI summaries or send your chat anywhere.</p>
-      </footer>
-    </div>
+      <details class="disclosure transcript-disclosure" id="transcript-disclosure">
+        <summary>Open full conversation <span id="transcript-count"></span></summary>
+        <ol class="brief-list transcript-list" id="transcript-list"></ol>
+      </details>
+
+      <p class="brief-disclaimer">Patterns surface possible signals; they do not understand context or generate an AI summary.</p>
+    </section>
   </main>
 </body>
 </html>

@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 require("./analyzer.js");
 
-const { analyzeMessages } = globalThis.MissedItAnalyzer;
+const { analyzeMessages, createPulseBrief } = globalThis.MissedItAnalyzer;
 
 function message(sender, content, timestamp = "09/10/26, 13:05") {
   return { timestamp, sender, content };
@@ -85,4 +85,69 @@ test("returns useful local statistics and explicit empty candidate state", () =>
 
 test("rejects message records missing required string fields", () => {
   assert.throws(() => analyzeMessages([{ sender: "A", content: "Hello" }]), TypeError);
+});
+
+test("creates a non-repeating brief with merged labels, evidence, and existing priority order", () => {
+  const messages = [
+    message("A", "Please send this by Friday; urgent, @Pat. We agreed."),
+    message("B", "We confirmed the venue."),
+    message("C", "ASAP, please check."),
+    message("D", "Complete the form by Tuesday."),
+    message("E", "Submit the first report."),
+    message("F", "Send the second report."),
+    message("G", "Complete the third report."),
+    message("H", "@Lee, please review."),
+    message("I", "Need to complete the last item.")
+  ];
+  const analysis = analyzeMessages(messages);
+  const brief = createPulseBrief(analysis);
+  const displayed = [
+    ...brief.attention,
+    ...brief.decisions,
+    ...brief.mentions,
+    ...brief.remaining
+  ];
+
+  assert.equal(brief.attention.length, 5);
+  assert.deepEqual(brief.attention.map(item => item.message.sender), ["A", "C", "D", "E", "F"]);
+  assert.deepEqual(brief.attention[0].labels, ["Urgency", "Deadline", "Action item", "Decision", "Mention"]);
+  assert.deepEqual(brief.attention[0].evidence, ["urgent", "by Friday", "send", "agreed", "@Pat"]);
+  assert.deepEqual(brief.decisions.map(item => item.message.sender), ["B"]);
+  assert.deepEqual(brief.mentions.map(item => item.message.sender), ["H"]);
+  assert.deepEqual(brief.remaining.map(item => item.message.sender), ["G", "I"]);
+  assert.equal(brief.decisionCount, analysis.categories.decisions.length);
+  assert.equal(brief.mentionCount, analysis.categories.mentions.length);
+  assert.equal(brief.decisionShownElsewhere, 1);
+  assert.equal(brief.mentionShownElsewhere, 1);
+  assert.equal(brief.flaggedCount, analysis.priorities.length);
+  assert.equal(new Set(displayed.map(item => item.message)).size, displayed.length);
+  assert.equal(displayed.length, brief.flaggedCount);
+});
+
+test("caps decision and mention sections and places overflow in remaining messages", () => {
+  const messages = [
+    ...Array.from({ length: 5 }, (_, index) => message(`Urgent${index}`, `Urgent item ${index}.`)),
+    ...Array.from({ length: 6 }, (_, index) => message(`Decision${index}`, `We agreed on item ${index}.`)),
+    ...Array.from({ length: 6 }, (_, index) => message(`Mention${index}`, `@Person${index} noted.`))
+  ];
+  const analysis = analyzeMessages(messages);
+  const brief = createPulseBrief(analysis);
+  const displayed = [
+    ...brief.attention,
+    ...brief.decisions,
+    ...brief.mentions,
+    ...brief.remaining
+  ];
+
+  assert.equal(brief.attention.length, 5);
+  assert.equal(brief.decisions.length, 5);
+  assert.equal(brief.mentions.length, 5);
+  assert.deepEqual(brief.remaining.map(item => item.message.sender), ["Decision5", "Mention5"]);
+  assert.equal(brief.remaining.length, brief.flaggedCount - 15);
+  assert.equal(new Set(displayed.map(item => item.message)).size, displayed.length);
+  assert.equal(displayed.length, brief.flaggedCount);
+});
+
+test("validates analysis input for Pulse Brief presentation", () => {
+  assert.throws(() => createPulseBrief(null), TypeError);
 });

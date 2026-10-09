@@ -18,6 +18,16 @@ test("parses a normal message with a 24-hour timestamp", () => {
   ]);
 });
 
+test("parses pasted WhatsApp text through the same export parser", () => {
+  const pastedText = "09/10/26, 13:05 - Rachana: Please send the notes.\n" +
+    "09/10/26, 13:06 - Dev: I will review.";
+  const messages = parseWhatsAppExport(pastedText);
+
+  assert.equal(messages.length, 2);
+  assert.equal(messages[0].sender, "Rachana");
+  assert.equal(messages[1].content, "I will review.");
+});
+
 test("keeps continuation lines in the same message", () => {
   const messages = parseWhatsAppExport(
     "09/10/26, 13:05 - Rachana: First line\nSecond line\n\nThird line"

@@ -163,3 +163,88 @@ This file records the user-provided prompts used for the ThreadPulse MVP. Histor
 > - Inspect the final diff and check that no unrelated files or behaviors changed.
 > - Report the files changed, test results, and any remaining issues. Do not claim browser testing unless you actually performed it.
 > Make the smallest maintainable change that achieves this goal. Do not start a broader visual redesign or add optional features.
+
+## Prompt 6 — Pulse Brief redesign
+
+> Redesign the existing ThreadPulse MVP around a new interaction concept: **Pulse Brief — one conversation in, one concise briefing out.**
+>
+> First inspect the current `index.html`, `styles.css`, `app.js`, `parser.js`, `analyzer.js`, tests, README, and prompt log. Keep the existing parser/analyzer logic and globals intact unless a minimal change is genuinely required. Do not start by rewriting the application.
+>
+> ### 1. Replace the input experience
+>
+> Provide two clearly visible input methods:
+>
+> - **Import chat:** select a WhatsApp `.txt` export using the existing file parser.
+> - **Paste conversation:** a textarea where users can paste chat text and process it using the same parser and analyzer.
+> Use a clear selected state for the input method. Show only the controls relevant to that method. Validate empty input and unsupported files with useful error messages. Never upload pasted or imported chat content to a server.
+>
+> ### 2. Replace the long results page with Pulse Brief
+>
+> After successful processing, display:
+>
+> - A compact source/status line and total message count.
+> - A heading: **“Here's what you missed.”**
+> - **Needs your attention:** show up to five unique high-priority messages.
+> - **Decisions made:** a compact list of detected decisions.
+> - **Direct mentions:** messages containing @mentions.
+> - A collapsed **“See all flagged messages”** disclosure for the remaining unique flagged messages.
+> - A collapsed **“Open full conversation”** disclosure for the parsed transcript.
+>
+> ### 3. Eliminate repetitive output
+>
+> The same original message must not be rendered repeatedly across separate category lists. Combine its detected labels on one card, for example `Action · Deadline · Mention`. Preserve the original message, sender, timestamp, and matched evidence. Do not invent deadlines, responsibilities, or interpretations.
+>
+> The priority view must reflect the existing heuristic ranking. Do not claim that the app understands context or produces AI-generated summaries.
+>
+> ### 4. Make it feel like a distinct product
+>
+> Use a restrained editorial dashboard style: clear typography, generous whitespace, readable message cards, and a small number of meaningful accent colors. Avoid excessive nested cards, tiny metadata, decorative charts, and long introductory copy. Make the primary results understandable at a glance. Ensure mobile responsiveness and keyboard accessibility.
+>
+> ### 5. Privacy and reliability
+>
+> Keep all processing local in the browser. Do not add external APIs, network requests, storage, frameworks, or dependencies. Use safe DOM creation and `textContent`; never use `innerHTML`, `outerHTML`, `insertAdjacentHTML`, or `document.write`. Reset previous results and errors correctly when switching input methods or processing another conversation. Do not leave stale results visible after a failed attempt.
+>
+> ### 6. Verify before finishing
+>
+> - Add or update tests for the paste input parsing path and deduplication/presentation data if applicable.
+> - Run `node --test parser.test.js analyzer.test.js`.
+> - Test both import and paste flows in a real browser.
+> - Test empty input, invalid file, and a chat containing messages that match multiple categories.
+> - Check mobile layout and the full transcript disclosure.
+> - Inspect the final diff; report every changed file and actual test results.
+> - Update README and prompt.md to reflect the implemented behavior and the actual prompt used.
+> Keep the change focused. Do not add optional features or modify the existing GitHub deployment configuration. Do not commit or push automatically.
+
+## Prompt 7 — Pulse Brief review fixes
+
+> Make only the following targeted fixes to ThreadPulse, based on the review. Do not refactor unrelated code or add dependencies.
+>
+> 1. **Fix incomplete section labels and counts**
+>
+> - Change “See all flagged messages” to “More flagged messages” because this section excludes messages already shown above.
+> - If decisions or mentions are also included in “Needs attention” or another visible section, show a short note explaining how many are already shown elsewhere.
+>
+> 2. **Bound the brief**
+>
+> - Render at most 5 decision cards and 5 mention cards.
+> - Put additional decision/mention messages into the existing remaining-messages disclosure without duplicating any message.
+> - Ensure the remaining count matches the actual number of messages in that disclosure.
+>
+> 3. **Privacy wording**
+>
+> - Add `autocomplete="off"` to the conversation paste textarea.
+> - Update README wording: the app does not intentionally save chat text, but the browser may restore form contents in some circumstances. Do not promise that reloading always erases pasted text.
+>
+> 4. **Keyboard focus visibility**
+>
+> - Change the relevant focus outlines in `styles.css` to use `var(--accent)` rather than the faint colors identified in the review. Keep existing focus behavior.
+>
+> Constraints:
+>
+> - Keep the existing local-only, rule-based architecture.
+> - Do not add network requests, storage, frameworks, or dependencies.
+> - Do not change the parser or analyzer detection logic.
+> - Preserve safe DOM rendering; do not use `innerHTML`.
+> - Keep the changes minimal and explain exactly which files changed.
+>
+> After editing, run `node --test parser.test.js analyzer.test.js` and `git diff --check`. Report the actual results; do not claim browser testing unless you perform it.
